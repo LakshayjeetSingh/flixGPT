@@ -1,1 +1,11 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+:root {
+  --bg-color: oklch(26.9% 0 0);
+  --fg-color: oklch(87% 0 0);
+}
+
+@theme inline {
+  --color-background: var(--bg-color);
+  --color-foreground: var(--fg-color);
+}
