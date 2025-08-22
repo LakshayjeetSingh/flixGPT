@@ -3,10 +3,11 @@ import validateCredentials from "../utils/validateCredentials";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
-
+import Button from "../ui/Button";
 export default function LoginPageForm() {
   const navigate = useNavigate();
   const [isSigningIn, setIsSigningIn] = useState(true);
@@ -17,43 +18,36 @@ export default function LoginPageForm() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const handleformSubmit = (e) => {
-    const error = validateCredentials(
-      emailRef.current.value,
-      passwordRef.current.value,
-    );
+    const email = emailRef.current.value.trim();
+    const pass = passwordRef.current.value.trim();
+    const error = validateCredentials(email, pass);
     setErrorMsg(error);
-    if (error) return;
-
+    if (error) return Promise.resolve(null);
     if (!isSigningIn) {
-      createUserWithEmailAndPassword(
-        auth,
-        emailRef.current.value,
-        passwordRef.current.value,
-      )
+      const signUpPromise = createUserWithEmailAndPassword(auth, email, pass);
+      signUpPromise
         .then((userCredential) => {
           const user = userCredential.user;
-          console.log(user);
+
           navigate("/browse");
         })
         .catch((error) => {
           setErrorMsg(error.code);
         });
+      return signUpPromise;
     } else {
-      signInWithEmailAndPassword(
-        auth,
-        emailRef.current.value,
-        passwordRef.current.value,
-      )
+      const signInPromise = signInWithEmailAndPassword(auth, email, pass)
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
           // ...
-          console.log(user);
+
           navigate("/browse");
         })
         .catch((error) => {
           setErrorMsg(error.code);
         });
+      return signInPromise;
     }
   };
 
@@ -83,13 +77,9 @@ export default function LoginPageForm() {
       <span className="relative">
         <p className="absolute -top-2 pl-1 text-sm text-red-500">{errorMsg}</p>
       </span>
-      <button
-        onClick={handleformSubmit}
-        type="submit"
-        className="cursor-pointer rounded-md bg-red-600 p-2 text-xl"
-      >
+      <Button handler={handleformSubmit} variant={"login"}>
         {isSigningIn ? "Login" : "SignUp"}
-      </button>
+      </Button>
       {isSigningIn ? (
         <span>
           New to FlixGPT?{" "}
